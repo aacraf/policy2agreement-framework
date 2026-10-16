@@ -2,6 +2,31 @@
 
 This package reproduces the proof of concept of the paper *Policy2Agreement: A Vision for Compiling Governance Policies into Negotiated Agreements among Organizational Agents* (Section 4 and Table 1). The notebook negotiates the agreements of the paper's running example and then executes them in simulated federated learning (FL) with differential privacy (DP).
 
+## What Policy2Agreement does
+
+When organizations collaborate, for instance to train a model on data that each of them controls, their software agents must agree on a configuration: here, a privacy budget ε, a target F1 score q for the trained model and a number of training rounds t. Each party, and each authority that governs the parties, already has a governance policy, a set of norms that constrains the configuration. Written independently, these policies conflict. Policy2Agreement compiles them into a negotiation among the agents and routes each conflict to whoever has standing over it, in four phases:
+
+1. **Policy ingestion.** A language model translates each policy into norms, under human review. This phase is not exercised here: the norms enter as data.
+2. **Conflict detection and resolution.** A direct conflict, where one norm rules out what another allows, is resolved by standing: the authority's norm prevails over the parties' (lex superior) and narrows them (curtailment), and what remains is the feasible set Ω_F. An indirect conflict, which only domain knowledge reveals, is made explicit by a domain rule that the authority approves: it flags a party's implausible combination of constraints with a multiplier μ.
+3. **Preference compilation.** Each party's constraints are read as directions of preference, which define an ideal point, and Eq. (1) scores every configuration by its distance from that point. Outside a party's acceptance set the adjusted utility û is 0; on a region its rule flags, û is μ times the utility.
+4. **Negotiation.** The agents negotiate with MiCRO-Min under the Stacked Alternating Offers Protocol. MiCRO-Min reads only the ordering of the utilities, so no agent discloses a number. An outcome that every agent accepts is the agreement; if none exists, the case escalates to the authority.
+
+The notebook then executes each agreement in simulated federated learning with differential privacy and checks whether the trained model reaches the agreed F1 score. It documents the training setup and its limits in its own Parts 3 and 8.
+
+### The running example
+
+Two hospitals H1 and H2 and an orchestrator R agree on (ε, q, t), with ε ∈ {0.3, 0.5, 0.6, 0.8}, q ∈ {0.80, 0.85, 0.90, 0.92} and t ∈ {10, 15, 20}: 48 configurations.
+
+| Issuer | Norms |
+|---|---|
+| H1 (party) | ε ≤ 0.3 and q ≥ 0.92 |
+| H2 (party) | ε ≤ 0.5 and t ≤ 15 |
+| R (party) | q ≥ 0.85 and t ≤ 20 (in the variant, t ≥ 15) |
+| Consortium (authority) | obliges t ≥ 15 |
+| Regulator (authority) | forbids ε > 0.6 |
+
+Read as preferences, all three parties rank (0.3, 0.92, 10) first. That configuration breaks the consortium's obligation, and q = 0.92 is implausible under ε = 0.3. Leaving the authorities' norms aside, a domain rule that flags H1's pair of constraints with μ = 0.2 moves the agreement to ω* = (0.5, 0.92, 10). Executed, the favorite reaches its F1 target in 32% of runs and ω* in 88%. Like the paper's prototype, the notebook applies the consortium's obligation but not the regulator's prohibition, which the prototype does not yet handle.
+
 ## Contents
 
 | File | Content |
@@ -31,23 +56,6 @@ You can also open `running_example.ipynb` in Jupyter and run all cells. A full r
 
 Every run uses fixed seeds. The negotiation is plain Python and gives the same results on any platform. The federated training reproduces the stored outputs exactly on Linux (x86-64) with the pinned versions; with other linear-algebra libraries the last digits of a training run can differ, which could move a reported share by one run.
 
-## What it reproduces
-
-As in the paper's Table 1, the negotiations apply the consortium's obligation t ≥ 15 but not the regulator's prohibition ε > 0.6, which the prototype does not yet handle.
-
-| Claim in the paper | Notebook |
-|---|---|
-| Section 3: the rule drops H1's stated ideal from first to 37th of the 48 outcomes, and its two next-best options rise to joint first (û ≈ 0.83) | Part 2 |
-| Section 3: an agent accepts only outcomes inside its acceptance set (every agreement of Table 1 does) | Part 2 |
-| Table 1: each agreement, each party's adjusted utility at it, and the mean number of steps (proposals or acceptances after the first proposal) over 6 turn orders × 20 seeds | Part 2 |
-| Table 1: every agreement is Pareto-optimal over Ω_F, with respect to the adjusted utilities | Part 2 |
-| Table 1: the share of 50 simulated FL runs whose F1 score reaches the agreed target, with 95% intervals | Parts 3, 4 and 6 |
-| Section 4: every μ below 5/6 yields ω* = (0.5, 0.92, 10), while μ = 0.9 does not (checked on a grid of μ) | Part 2 |
-| Section 4: the consortium's obligation t ≥ 15 splits the agreement by turn order until H1 states that privacy comes first | Part 2 |
-| Section 4: the implausible favorites reach their F1 target in 32% and 40% of runs, and the agreements reached with the rule in 88% to 92% | Part 6 |
-| Section 4: a rule calibrated on these runs sets μ ≈ 0.37 and again yields ω* (also checked on 50 fresh seeds) | Part 5 |
-| Section 4: a language model flagged the same pair of H1 with μ = 0.5 and matched the hand-written rules on 12 of the 13 agents with a valid answer | Part 7 (recorded answers, not re-run) |
-
 ## Relation to the prototype
 
 The paper's prototype reads ODRL policies, runs Phase 2 in the EYE reasoner and negotiates with its own MiCRO-Min engine. So that this package installs with pip alone, `p2a_negotiation.py` encodes the running example's norms and domain rule in Python and ports the prototype's compiler of Eq. (1) and its negotiation engine line by line. The notebook checks this port three ways:
@@ -59,12 +67,6 @@ The paper's prototype reads ODRL policies, runs Phase 2 in the EYE reasoner and 
 Like the prototype's, the engine uses a reservation value of 0. An agent could therefore accept an outcome outside its acceptance set once it has conceded that far, so the notebook checks that no agreement of Table 1 does.
 
 The language-model rule proposals of Section 4 need an API key and a model that changes over time, so the package includes their recorded answers (`results/llm_rule_proposals.csv`) instead of re-running them. The ODRL ingestion and the EYE reasoner are not included.
-
-## Federated learning and differential privacy
-
-Each run is a 5-fold cross-validation. The four training folds are split, stratified, between the two hospitals H1 and H2 (about 280 patients each), and the orchestrator R averages their models (FedAvg). Each hospital trains a logistic regression with DP-SGD (Poisson sampling, per-example clipping and Gaussian noise), one local epoch per round. Privacy is record-level (ε, δ)-DP with δ = 10⁻⁵ over all t rounds. It is accounted with Rényi DP at integer orders 2 to 512 and converted with the bound of Canonne, Kamath and Steinke (2020), and the notebook checks the accountant against two values from Google's dp-accounting library.
-
-Hyperparameters were tuned for each (ε, t) on seeds 0 to 19 and are stored in the notebook. Setting `RETUNE = True` redoes the tuning, which runs 24,000 trainings instead of 750. All reported results use the separate seeds 100 to 149, and the calibration check uses seeds 200 to 249. The tuning uses the same patients, so a deployment would tune on public or synthetic data. NumPy's generator is not a cryptographic source, so the code simulates the DP guarantee rather than providing it.
 
 ## Data
 
