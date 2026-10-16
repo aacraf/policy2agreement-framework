@@ -1,0 +1,19 @@
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix fl:   <http://example.com/fl-policies#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.com/policies/h2-offer>
+  a odrl:Offer ;
+  odrl:assigner <http://example.com/parties/H2> ;
+  fl:pairedWith <http://example.com/policies/h2-request> ;
+  odrl:permission [
+    a odrl:Permission ;
+    odrl:action odrl:use ;
+    odrl:target <http://example.com/assets/H2-data> ;
+    odrl:constraint
+      [ a odrl:Constraint ;
+        odrl:leftOperand fl:epsilon ;
+        odrl:operator odrl:lteq ;
+        odrl:rightOperand "0.5"^^xsd:decimal ;
+        fl:priority 1 ]
+  ] .

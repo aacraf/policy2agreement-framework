@@ -1,0 +1,23 @@
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix fl:   <http://example.com/fl-policies#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.com/policies/r-request>
+  a odrl:Request ;
+  odrl:assignee <http://example.com/parties/R> ;
+  odrl:permission [
+    a odrl:Permission ;
+    odrl:action odrl:use ;
+    odrl:target <http://example.com/assets/fl-model> ;
+    odrl:constraint
+      [ a odrl:Constraint ;
+        odrl:leftOperand fl:f1Score ;
+        odrl:operator odrl:gteq ;
+        odrl:rightOperand "0.85"^^xsd:decimal ;
+        fl:priority 1 ] ,
+      [ a odrl:Constraint ;
+        odrl:leftOperand fl:rounds ;
+        odrl:operator odrl:lteq ;
+        odrl:rightOperand "20"^^xsd:integer ;
+        fl:priority 2 ]
+  ] .

@@ -1,0 +1,60 @@
+{
+ "source": "Recorded with the paper's prototype (ODRL ingestion, EYE reasoner for Phase 2, compiler of Eq. (1), MiCRO-Min under SAOP): 6 turn orders x 20 seeds per setting. The notebook checks that p2a_negotiation.py reproduces these agreements and mean step counts.",
+ "settings": {
+  "no domain rule": {
+   "agreements": {
+    "(0.3, 0.92, 10)": 120
+   },
+   "mean_steps": 2.3333333333333335
+  },
+  "rule, mu = 0.2": {
+   "agreements": {
+    "(0.5, 0.92, 10)": 120
+   },
+   "mean_steps": 17.775
+  },
+  "rule, mu = 0.5": {
+   "agreements": {
+    "(0.5, 0.92, 10)": 120
+   },
+   "mean_steps": 17.775
+  },
+  "rule, mu = 0.8": {
+   "agreements": {
+    "(0.5, 0.92, 10)": 120
+   },
+   "mean_steps": 17.775
+  },
+  "rule, mu = 0.9": {
+   "agreements": {
+    "(0.3, 0.92, 10)": 120
+   },
+   "mean_steps": 2.3333333333333335
+  },
+  "+ consortium's t >= 15": {
+   "agreements": {
+    "(0.3, 0.9, 15)": 60,
+    "(0.5, 0.92, 15)": 60
+   },
+   "mean_steps": 18.275
+  },
+  "+ H1: privacy first": {
+   "agreements": {
+    "(0.3, 0.9, 15)": 120
+   },
+   "mean_steps": 20.275
+  },
+  "variant, no rule": {
+   "agreements": {
+    "(0.3, 0.92, 15)": 120
+   },
+   "mean_steps": 34.075
+  },
+  "variant, mu = 0.2": {
+   "agreements": {
+    "(0.5, 0.92, 15)": 120
+   },
+   "mean_steps": 57.2
+  }
+ }
+}

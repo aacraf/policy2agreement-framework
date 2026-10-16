@@ -1,0 +1,15 @@
+scenario,agent,hand_authored_flagged,hand_authored_multiplier,llm_valid,llm_flagged,llm_multiplier,llm_reason,agree_on_which_constraints
+scenario_1_original,H1,H1_c_eps;H1_c_q,0.2,True,H1_c_eps;H1_c_q,0.5,Simultaneously requiring an extremely strict differential privacy budget (eps <= 0.3) and a high accuracy target (q >= 0.92) creates a domain-implausible combination due to the high noise injected during training.,True
+scenario_1_original,H2,,,True,,1.0,,True
+scenario_1_original,R,,,True,,1.0,,True
+scenario_2_bilateral,P,P_c_eps;P_c_q,0.2,True,P_c_eps;P_c_q,0.8,Requiring a very low differential privacy budget (eps <= 0.3) alongside a high accuracy target (q >= 0.92) forms a domain-implausible combination due to the heavy noise required for strong privacy.,True
+scenario_2_bilateral,Q,,,True,,1.0,,True
+scenario_3_no_conflict,X,,,True,,1.0,,True
+scenario_3_no_conflict,Y,,,True,,1.0,,True
+scenario_3_no_conflict,Z,,,True,,1.0,,True
+scenario_4_four_agents,A,A_c_eps;A_c_q,0.2,True,,1.0,,False
+scenario_4_four_agents,B,,,True,,1.0,,True
+scenario_4_four_agents,C,,,True,,1.0,,True
+scenario_4_four_agents,D,,,True,,1.0,,True
+scenario_5_infeasible,M,,,True,,1.0,,True
+scenario_5_infeasible,N,,,False,,,API quota error (429): no valid answer,False
